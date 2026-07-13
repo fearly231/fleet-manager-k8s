@@ -13,9 +13,11 @@ spec:
         valuesObject:
           controller:
             service:
+              targetPorts:
+                https: http
               annotations:
                 service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:eu-central-1:873593444498:certificate/0da330aa-7740-4af4-84b0-abb9136c639d"
-                service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+                service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
                 service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
   destination:
     server: 'https://kubernetes.default.svc'
