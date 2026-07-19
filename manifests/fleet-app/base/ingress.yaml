@@ -5,7 +5,8 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - http:
+  - host: dev.chorogra.me
+    http:
       paths:
       # 1. Ruch do Backendu (zostawiamy prefiks /api, bo kod w Pythonie go oczekuje)
       - path: /api

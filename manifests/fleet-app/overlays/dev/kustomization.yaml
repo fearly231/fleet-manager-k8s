@@ -1,0 +1,11 @@
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: ExternalSecret
+      name: fleet-backend-secrets-es
+    patch: |-
+      - op: replace
+        path: /spec/dataFrom/0/extract/key
+        value: dev-fleet-app-secrets

@@ -1,0 +1,18 @@
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: Ingress
+      name: fleet-ingress
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: chorogra.me
+  - target:
+      kind: ExternalSecret
+      name: fleet-backend-secrets-es
+    patch: |-
+      - op: replace
+        path: /spec/dataFrom/0/extract/key
+        value: prod-fleet-app-secrets
