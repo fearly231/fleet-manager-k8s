@@ -1,0 +1,12 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  role: "prod-fleet-eks-node-role"
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "prod-fleet-eks-cluster"
+  securityGroupSelectorTerms:
+    - tags:
+        "kubernetes.io/cluster/prod-fleet-eks-cluster": "owned"
