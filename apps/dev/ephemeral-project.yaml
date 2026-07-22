@@ -11,6 +11,8 @@ spec:
   destinations:
     - namespace: 'fleet-app-pr-*'
       server: 'https://kubernetes.default.svc'
+    - namespace: ''
+      server: 'https://kubernetes.default.svc'
   # Only allow this source repository
   sourceRepos:
     - 'https://github.com/fearly231/fleet-manager-k8s.git'
