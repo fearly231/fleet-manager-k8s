@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ephemeral-environments
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - pullRequest:
+        github:
+          owner: fearly231
+          repo: fleet-manager
+          tokenRef:
+            secretName: github-token-secret
+            key: token
+        requeueAfterSeconds: 60
+  template:
+    metadata:
+      name: 'fleet-app-pr-{{ .number }}'
+      labels:
+        environment: ephemeral
+        pr-number: '{{ .number }}'
+    spec:
+      project: default
+      source:
+        repoURL: 'https://github.com/fearly231/fleet-manager-k8s.git'
+        targetRevision: HEAD
+        path: manifests/fleet-app/overlays/dev
+        kustomize:
+          namePrefix: 'pr-{{ .number }}-'
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: 'fleet-app-pr-{{ .number }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

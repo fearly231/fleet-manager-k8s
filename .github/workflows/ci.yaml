@@ -1,0 +1,30 @@
+name: GitOps Validation CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Validate Kubernetes Manifests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Setup Kubeconform
+        uses: bhowell2/setup-kubeconform@v1
+        with:
+          kubeconform-version: latest
+
+      - name: Validate Dev Overlays
+        run: |
+          kustomize build manifests/fleet-app/overlays/dev > dev.yaml
+          kubeconform -strict -summary dev.yaml

@@ -3,3 +3,4 @@ resources:
   - frontend.yaml
   - ingress.yaml
   - eso-secret.yaml
+  - network-policy.yaml
