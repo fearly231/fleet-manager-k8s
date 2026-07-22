@@ -15,7 +15,9 @@ spec:
   sourceRepos:
     - 'https://github.com/fearly231/fleet-manager-k8s.git'
   # Restrict cluster-scoped resources — deny dangerous ones
-  clusterResourceWhitelist: []
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
   # Allow only safe namespace-scoped resources
   namespaceResourceWhitelist:
     - group: ''
