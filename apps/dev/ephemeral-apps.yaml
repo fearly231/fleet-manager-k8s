@@ -43,8 +43,8 @@ spec:
           # internal Service references (#10). Kustomize images transformer
           # only changes image refs, not resource names.
           images:
-            - '873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-backend:pr-{{ .number }}'
-            - '873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-frontend:pr-{{ .number }}'
+            - '873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-backend:{{ .head_sha }}'
+            - '873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-frontend:{{ .head_sha }}'
           patches:
             # Patch Ingress host for PR-specific subdomain
             - target:
