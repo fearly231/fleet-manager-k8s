@@ -67,7 +67,7 @@ spec:
               patch: |-
                 - op: replace
                   path: /stringData/POSTGRES_PASSWORD
-                  value: 'pr-{{ .number }}-{{ .head_sha }}'
+                  value: 'pr-{{ .number }}-db-secret'
             # Patch ESO DATABASE_URL to use the per-PR postgres password
             - target:
                 kind: ExternalSecret
@@ -75,7 +75,7 @@ spec:
               patch: |-
                 - op: replace
                   path: /spec/target/template/data/DATABASE_URL
-                  value: 'postgresql+psycopg://fleet_ephemeral:pr-{{ .number }}-{{ .head_sha }}@postgres-service:5432/fleetdb'
+                  value: 'postgresql+psycopg://fleet_ephemeral:pr-{{ .number }}-db-secret@postgres-service:5432/fleetdb'
       destination:
         server: 'https://kubernetes.default.svc'
         namespace: 'fleet-app-pr-{{ .number }}'
