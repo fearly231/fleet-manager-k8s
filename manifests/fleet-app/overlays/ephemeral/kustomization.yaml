@@ -1,0 +1,10 @@
+resources:
+  - ../../base
+  - postgres-db.yaml
+
+# Override the base ExternalSecret with ephemeral-specific version
+patchesStrategicMerge:
+  - eso-secret.yaml
+
+# Remove the backend egress to external services (ephemeral uses local PG only)
+# and ensure the NetworkPolicy backend-egress matches ephemeral postgres

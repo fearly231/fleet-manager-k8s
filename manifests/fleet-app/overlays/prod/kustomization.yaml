@@ -1,6 +1,14 @@
 resources:
   - ../../base
 
+images:
+  - name: 873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-backend
+    newName: 873593444498.dkr.ecr.eu-central-1.amazonaws.com/prod-fleet-ecr-backend
+    newTag: IMAGE_TAG  # Must be set by CI/CD pipeline to a specific release version
+  - name: 873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-frontend
+    newName: 873593444498.dkr.ecr.eu-central-1.amazonaws.com/prod-fleet-ecr-frontend
+    newTag: IMAGE_TAG  # Must be set by CI/CD pipeline to a specific release version
+
 patches:
   - target:
       kind: Ingress
@@ -9,6 +17,12 @@ patches:
       - op: replace
         path: /spec/rules/0/host
         value: chorogra.me
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: chorogra.me
+      - op: replace
+        path: /spec/tls/0/secretName
+        value: fleet-tls-cert-prod
   - target:
       kind: ExternalSecret
       name: fleet-backend-secrets-es

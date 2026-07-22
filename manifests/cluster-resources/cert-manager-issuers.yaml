@@ -1,0 +1,39 @@
+# ============================================================================
+# cert-manager ClusterIssuer — Let's Encrypt production
+# ============================================================================
+# This is the issuer referenced by Ingress annotations:
+#   cert-manager.io/cluster-issuer: "letsencrypt-prod"
+#
+# Uses HTTP01 challenge via ingress-nginx — no DNS provider config needed.
+# ============================================================================
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    # Let's Encrypt production endpoint
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@chorogra.me
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+---
+# Staging issuer for testing (won't hit rate limits)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: admin@chorogra.me
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: nginx

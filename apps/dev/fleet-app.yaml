@@ -4,17 +4,15 @@ metadata:
   name: fleet-app
   namespace: argocd
 spec:
-  project: default
+  project: fleet-app-dev
   source:
-      repoURL: 'https://github.com/fearly231/fleet-manager-k8s.git'
-      targetRevision: HEAD
-      path: manifests/fleet-app/overlays/dev
+    repoURL: 'https://github.com/fearly231/fleet-manager-k8s.git'
+    targetRevision: HEAD
+    path: manifests/fleet-app/overlays/dev
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: default
   syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-          
-          
+    automated:
+      prune: true
+      selfHeal: true

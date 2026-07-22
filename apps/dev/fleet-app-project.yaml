@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: fleet-app-dev
+  namespace: argocd
+spec:
+  description: "Project for the main fleet-app DEV environment"
+  destinations:
+    - namespace: default
+      server: 'https://kubernetes.default.svc'
+  sourceRepos:
+    - 'https://github.com/fearly231/fleet-manager-k8s.git'
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: Secret
+    - group: ''
+      kind: ConfigMap
+    - group: apps
+      kind: Deployment
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: external-secrets.io
+      kind: ExternalSecret

@@ -1,0 +1,79 @@
+# ============================================================================
+# Promote Release to Production
+# ============================================================================
+# This workflow updates the prod overlay's image tags to a specific release.
+# Triggered by:
+#   1. Manual dispatch (workflow_dispatch) — operator picks a version
+#   2. Repository dispatch — called by fleet-manager app repo after release
+#
+# Flow:
+#   fleet-manager CI tags a release (e.g. v1.2.3) →
+#   triggers this workflow →
+#   updates prod kustomization.yaml image tags →
+#   commits and pushes →
+#   ArgoCD syncs the change to production cluster
+# ============================================================================
+
+name: Promote Release to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy (e.g. v1.2.3 or git SHA)'
+        required: true
+        type: string
+  repository_dispatch:
+    types: [promote-to-prod]
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    name: Update prod image tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine image tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            TAG="${{ github.event.client_payload.image_tag }}"
+          else
+            TAG="${{ github.event.inputs.image_tag }}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "🏷️  Promoting image tag: ${TAG}"
+
+      - name: Update prod kustomization.yaml
+        run: |
+          # Use sed to replace the image tag in the prod overlay
+          sed -i "s|newTag: .*# Must be set by CI/CD pipeline to a specific release version|newTag: ${{ steps.tag.outputs.tag }}  # Must be set by CI/CD pipeline to a specific release version|g" \
+            manifests/fleet-app/overlays/prod/kustomization.yaml
+
+      - name: Verify change
+        run: |
+          echo "--- Updated prod kustomization.yaml ---"
+          cat manifests/fleet-app/overlays/prod/kustomization.yaml
+          echo "--- Validating kustomize build ---"
+          # Install kustomize for validation
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          ./kustomize build manifests/fleet-app/overlays/prod > /dev/null
+          echo "✅ Kustomize build successful"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifests/fleet-app/overlays/prod/kustomization.yaml
+          git commit -m "release(prod): deploy ${{ steps.tag.outputs.tag }}
+
+          Automated promotion triggered by ${{ github.event_name }}.
+          Image tag: ${{ steps.tag.outputs.tag }}"
+          git push

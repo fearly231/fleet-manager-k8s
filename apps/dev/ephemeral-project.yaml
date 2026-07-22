@@ -1,0 +1,37 @@
+# Dedicated ArgoCD AppProject for ephemeral PR environments
+# Restricts what resources and namespaces ephemeral apps can use
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ephemeral-pr-environments
+  namespace: argocd
+spec:
+  description: "Restricted project for ephemeral PR review environments"
+  # Only allow deployments to fleet-app-pr-* namespaces
+  destinations:
+    - namespace: 'fleet-app-pr-*'
+      server: 'https://kubernetes.default.svc'
+  # Only allow this source repository
+  sourceRepos:
+    - 'https://github.com/fearly231/fleet-manager-k8s.git'
+  # Restrict cluster-scoped resources — deny dangerous ones
+  clusterResourceWhitelist: []
+  # Allow only safe namespace-scoped resources
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: Secret
+    - group: ''
+      kind: ConfigMap
+    - group: apps
+      kind: Deployment
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: external-secrets.io
+      kind: ExternalSecret
+  # Orphan resources when application is deleted (safer cleanup)
+  orphanedResources:
+    warn: true

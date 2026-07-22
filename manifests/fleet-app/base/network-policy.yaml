@@ -1,12 +1,33 @@
+# === Default deny all ingress and egress ===
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: default-deny-ingress
+  name: default-deny-all
 spec:
   podSelector: {}
   policyTypes:
   - Ingress
+  - Egress
 ---
+# === Allow DNS resolution for all pods ===
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+---
+# === Allow Ingress Controller → Frontend ===
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -23,6 +44,27 @@ spec:
         matchLabels:
           kubernetes.io/metadata.name: ingress-nginx
 ---
+# === Allow Ingress Controller → Backend (for /api, /docs, /openapi.json) ===
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-backend
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+---
+# === Allow Frontend → Backend (server-side API calls) ===
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -38,3 +80,46 @@ spec:
     - podSelector:
         matchLabels:
           app: frontend
+    ports:
+    - protocol: TCP
+      port: 8000
+---
+# === Allow Frontend egress to Backend only ===
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: backend
+    ports:
+    - protocol: TCP
+      port: 8000
+---
+# === Allow Backend egress to PostgreSQL only ===
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres-ephemeral
+    ports:
+    - protocol: TCP
+      port: 5432

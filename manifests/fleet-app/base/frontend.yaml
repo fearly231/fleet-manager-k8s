@@ -16,12 +16,17 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: 873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-frontend:latest
+        image: 873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-frontend:IMAGE_TAG
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000 
         env:
-        - name: BACKEND_URL 
-          value: "http://backend-service.default.svc.cluster.local:8000"
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: BACKEND_URL
+          value: "http://backend-service.$(POD_NAMESPACE).svc.cluster.local:8000"
         - name: NEXT_PUBLIC_API_URL 
           value: "/api"
         livenessProbe:

@@ -4,7 +4,7 @@ metadata:
     name: root-app
     namespace: argocd
 spec:
-  project: default
+  project: default  # Root app uses default — it only deploys to argocd namespace
   source:
     repoURL: 'https://github.com/fearly231/fleet-manager-k8s.git'
     targetRevision: HEAD

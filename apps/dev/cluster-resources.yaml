@@ -1,0 +1,21 @@
+# ArgoCD Application for cluster-scoped resources
+# (ClusterSecretStore, ClusterIssuers)
+# These are deployed ONCE per cluster, not per namespace.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cluster-resources
+  namespace: argocd
+spec:
+  project: default  # Root-level cluster resources — needs cluster-wide access
+  source:
+    repoURL: 'https://github.com/fearly231/fleet-manager-k8s.git'
+    targetRevision: HEAD
+    path: manifests/cluster-resources
+  destination:
+    server: 'https://kubernetes.default.svc'
+    # No namespace — these are cluster-scoped resources
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

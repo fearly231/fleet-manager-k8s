@@ -15,6 +15,17 @@ spec:
             secretName: github-token-secret
             key: token
         requeueAfterSeconds: 60
+  # Limit max number of concurrent PR environments to prevent resource exhaustion
+  strategy:
+    type: RollingSync
+    rollingSync:
+      steps:
+        - matchExpressions:
+            - key: pr-number
+              operator: In
+              values:
+                - '{{ .number }}'
+          maxUpdate: 5  # max 5 environments syncing simultaneously
   template:
     metadata:
       name: 'fleet-app-pr-{{ .number }}'
@@ -22,13 +33,49 @@ spec:
         environment: ephemeral
         pr-number: '{{ .number }}'
     spec:
-      project: default
+      project: ephemeral-pr-environments
       source:
         repoURL: 'https://github.com/fearly231/fleet-manager-k8s.git'
         targetRevision: HEAD
-        path: manifests/fleet-app/overlays/dev
+        path: manifests/fleet-app/overlays/ephemeral
         kustomize:
-          namePrefix: 'pr-{{ .number }}-'
+          # Use images transformer instead of namePrefix to avoid breaking
+          # internal Service references (#10). Kustomize images transformer
+          # only changes image refs, not resource names.
+          images:
+            - '873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-backend:pr-{{ .number }}'
+            - '873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-frontend:pr-{{ .number }}'
+          patches:
+            # Patch Ingress host for PR-specific subdomain
+            - target:
+                kind: Ingress
+                name: fleet-ingress
+              patch: |-
+                - op: replace
+                  path: /spec/rules/0/host
+                  value: 'pr-{{ .number }}.dev.chorogra.me'
+                - op: replace
+                  path: /spec/tls/0/hosts/0
+                  value: 'pr-{{ .number }}.dev.chorogra.me'
+                - op: replace
+                  path: /spec/tls/0/secretName
+                  value: 'fleet-tls-cert-pr-{{ .number }}'
+            # Patch PostgreSQL credentials Secret with per-PR password
+            - target:
+                kind: Secret
+                name: postgres-credentials
+              patch: |-
+                - op: replace
+                  path: /stringData/POSTGRES_PASSWORD
+                  value: 'pr-{{ .number }}-{{ .head_sha }}'
+            # Patch ESO DATABASE_URL to use the per-PR postgres password
+            - target:
+                kind: ExternalSecret
+                name: fleet-backend-secrets-es
+              patch: |-
+                - op: replace
+                  path: /spec/target/template/data/DATABASE_URL
+                  value: 'postgresql+psycopg://fleet_ephemeral:pr-{{ .number }}-{{ .head_sha }}@postgres-service:5432/fleetdb'
       destination:
         server: 'https://kubernetes.default.svc'
         namespace: 'fleet-app-pr-{{ .number }}'
@@ -38,3 +85,4 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true

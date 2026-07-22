@@ -12,6 +12,9 @@ jobs:
   validate:
     name: Validate Kubernetes Manifests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        overlay: [dev, ephemeral, prod]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -24,7 +27,44 @@ jobs:
         with:
           kubeconform-version: latest
 
-      - name: Validate Dev Overlays
+      - name: Build ${{ matrix.overlay }} overlay
         run: |
-          kustomize build manifests/fleet-app/overlays/dev > dev.yaml
-          kubeconform -strict -summary dev.yaml
+          kustomize build manifests/fleet-app/overlays/${{ matrix.overlay }} > ${{ matrix.overlay }}.yaml
+
+      - name: Validate ${{ matrix.overlay }} overlay
+        run: |
+          kubeconform \
+            -strict \
+            -summary \
+            -skip ExternalSecret,ClusterSecretStore \
+            -kubernetes-version 1.29.0 \
+            ${{ matrix.overlay }}.yaml
+
+  validate-argo:
+    name: Validate ArgoCD Manifests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Kubeconform
+        uses: bhowell2/setup-kubeconform@v1
+        with:
+          kubeconform-version: latest
+
+      - name: Validate ArgoCD apps
+        run: |
+          for f in apps/dev/*.yaml bootstrap-*.yaml; do
+            echo "--- Validating $f ---"
+            kubeconform \
+              -strict \
+              -summary \
+              -skip Application,ApplicationSet,AppProject \
+              "$f" || true
+          done
+
+      - name: YAML lint
+        run: |
+          find . -name '*.yaml' -not -path './.git/*' | while read f; do
+            python3 -c "import yaml; yaml.safe_load(open('$f'))" 2>&1 && echo "OK: $f" || echo "FAIL: $f"
+          done

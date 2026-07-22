@@ -1,6 +1,12 @@
 resources:
   - ../../base
 
+images:
+  - name: 873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-backend
+    newTag: latest  # DEV uses latest from main branch; prod should pin to a release tag
+  - name: 873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-frontend
+    newTag: latest  # DEV uses latest from main branch; prod should pin to a release tag
+
 patches:
   - target:
       kind: ExternalSecret
