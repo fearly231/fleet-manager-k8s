@@ -36,8 +36,11 @@ spec:
       kind: ResourceQuota
     - group: ''
       kind: LimitRange
+    - group: ''
+      kind: PersistentVolumeClaim
     - group: networking.k8s.io
       kind: NetworkPolicy
+
     - group: external-secrets.io
       kind: ExternalSecret
   # Orphan resources when application is deleted (safer cleanup)
