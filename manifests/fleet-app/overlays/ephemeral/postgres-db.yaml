@@ -10,6 +10,18 @@ stringData:
   # NOTE: For ephemeral environments, the ApplicationSet generates a random-enough
   # password per PR using the PR number + head_sha. See ephemeral-apps.yaml patches.
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,6 +36,10 @@ spec:
       labels:
         app: postgres-ephemeral
     spec:
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-data-pvc
       containers:
         - name: postgres
           image: postgres:16-alpine
@@ -43,6 +59,9 @@ spec:
                 secretKeyRef:
                   name: postgres-credentials
                   key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
           ports:
             - containerPort: 5432
           resources:

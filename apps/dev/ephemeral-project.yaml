@@ -32,6 +32,10 @@ spec:
       kind: Deployment
     - group: networking.k8s.io
       kind: Ingress
+    - group: ''
+      kind: ResourceQuota
+    - group: ''
+      kind: LimitRange
     - group: networking.k8s.io
       kind: NetworkPolicy
     - group: external-secrets.io

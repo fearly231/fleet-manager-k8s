@@ -1,3 +1,4 @@
 resources:
   - cluster-secret-store.yaml
-  - cert-manager-issuers.yaml
+  # - cert-manager-issuers.yaml  # Wymaga instalacji CRD cert-manager (certyfikaty są na ACM w AWS)
+

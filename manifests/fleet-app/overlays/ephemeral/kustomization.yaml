@@ -1,10 +1,26 @@
 resources:
   - ../../base
   - postgres-db.yaml
+  - resource-limits.yaml
 
-# Override the base ExternalSecret with ephemeral-specific version
 patchesStrategicMerge:
   - eso-secret.yaml
 
-# Remove the backend egress to external services (ephemeral uses local PG only)
-# and ensure the NetworkPolicy backend-egress matches ephemeral postgres
+patches:
+  - target:
+      kind: Deployment
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: all
+      spec:
+        template:
+          spec:
+            tolerations:
+              - key: "environment"
+                operator: "Equal"
+                value: "ephemeral"
+                effect: "NoSchedule"
+            nodeSelector:
+              environment: "ephemeral"
