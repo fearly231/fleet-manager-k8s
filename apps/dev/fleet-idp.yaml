@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fleet-idp
+  namespace: argocd
+spec:
+  project: fleet-app-dev
+  source:
+    repoURL: 'https://github.com/fearly231/fleet-manager-k8s.git'
+    targetRevision: HEAD
+    path: manifests/fleet-idp/overlays/dev
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

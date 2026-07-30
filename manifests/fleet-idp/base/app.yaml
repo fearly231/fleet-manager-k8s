@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleet-idp
+  labels:
+    app: idp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: idp
+  template:
+    metadata:
+      labels:
+        app: idp
+    spec:
+      containers:
+      - name: idp
+        image: 873593444498.dkr.ecr.eu-central-1.amazonaws.com/dev-fleet-ecr-idp:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7007
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: idp-service
+spec:
+  type: ClusterIP
+  selector:
+    app: idp
+  ports:
+    - protocol: TCP
+      port: 7007
+      targetPort: 7007
