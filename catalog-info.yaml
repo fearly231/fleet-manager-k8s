@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: fleet-manager-k8s
+  description: Kubernetes GitOps Manifests (ArgoCD)
+  links:
+    - url: https://github.com/fearly231/fleet-manager-k8s
+      title: GitHub Repository
+      icon: github
+spec:
+  type: service
+  lifecycle: experimental
+  owner: group:default/engineering
