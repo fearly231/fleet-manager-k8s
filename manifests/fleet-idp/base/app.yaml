@@ -25,6 +25,10 @@ spec:
           value: "https://idp.dev.chorogra.me"
         - name: APP_CONFIG_backend_baseUrl
           value: "https://idp.dev.chorogra.me"
+        - name: APP_CONFIG_backend_database_client
+          value: "better-sqlite3"
+        - name: APP_CONFIG_backend_database_connection
+          value: ":memory:"
         resources:
           requests:
             cpu: "200m"
