@@ -29,6 +29,9 @@ spec:
           value: "better-sqlite3"
         - name: APP_CONFIG_backend_database_connection
           value: ":memory:"
+        envFrom:
+        - secretRef:
+            name: fleet-idp-secrets
         resources:
           requests:
             cpu: "200m"
