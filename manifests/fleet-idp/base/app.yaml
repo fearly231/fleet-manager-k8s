@@ -20,6 +20,11 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 7007
+        env:
+        - name: APP_CONFIG_app_baseUrl
+          value: "https://idp.dev.chorogra.me"
+        - name: APP_CONFIG_backend_baseUrl
+          value: "https://idp.dev.chorogra.me"
         resources:
           requests:
             cpu: "200m"
